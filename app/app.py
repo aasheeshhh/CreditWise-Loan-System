@@ -1,10 +1,17 @@
+import os
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib
 import pandas as pd
 
 app = Flask(__name__)
-CORS(app)
+# Allow deployed SPA origins via CORS_ORIGINS (comma-separated). Defaults to all origins.
+_cors_origins = os.environ.get("CORS_ORIGINS", "*")
+CORS(
+    app,
+    resources={r"/*": {"origins": [o.strip() for o in _cors_origins.split(",")]}},
+)
 
 model = joblib.load("models/model.pkl")
 

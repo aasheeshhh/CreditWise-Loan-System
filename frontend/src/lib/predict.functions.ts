@@ -1,4 +1,3 @@
-import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 const PredictSchema = z.object({
@@ -23,81 +22,106 @@ export type PredictInput = z.infer<typeof PredictSchema>;
 
 export type ShapFeature = {
   feature: string;
-  value: number; // contribution
-  raw: string;
+  value: number;
+  raw: string | number;
 };
 
 export type PredictResult = {
   prediction: "Approved" | "Rejected";
-  confidence: number; // 0..1
+  confidence: number;
   approvalProbability: number;
   shap_values: ShapFeature[];
-  feature_importance: { feature: string; importance: number }[];
+  feature_importance?: { feature: string; importance: number }[];
   insights: { type: "positive" | "negative" | "neutral"; text: string }[];
   suggestions: string[];
 };
 
 /**
- * Heuristic ML-like scoring kept identical to existing logic.
- * Preserves backend contract: POST /predict -> { prediction, confidence, shap_values, feature_importance }
+ * Development: Vite proxies /api → http://localhost:5000 (see vite.config.ts).
+ * Optional VITE_API_URL in .env.local overrides the proxy for remote API testing.
+ * Production: VITE_API_URL is required (set in Netlify/Vercel).
  */
-export const predictLoan = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => PredictSchema.parse(input))
-  .handler(async ({ data }): Promise<PredictResult> => {
-    const totalIncome = data.income + data.coapplicantIncome;
-    const dti = data.loanAmount / Math.max(totalIncome * data.loanTerm, 1);
-    const ltv = data.collateralValue > 0 ? data.loanAmount / data.collateralValue : 1;
-    const liabilityRatio = data.existingLoans / Math.max(totalIncome, 1);
+export function getApiBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_URL?.trim();
 
-    // Contribution model (mock SHAP)
-    const contribs: ShapFeature[] = [
-      { feature: "Credit Score", value: (data.creditScore - 650) / 250, raw: String(data.creditScore) },
-      { feature: "Income", value: Math.min(totalIncome / 15000, 1) - 0.3, raw: `$${totalIncome.toLocaleString()}` },
-      { feature: "Debt-to-Income", value: -Math.min(dti * 8, 1), raw: dti.toFixed(3) },
-      { feature: "Employment", value: data.employmentStatus === "employed" ? 0.25 : data.employmentStatus === "self-employed" ? 0.05 : -0.3, raw: data.employmentStatus },
-      { feature: "Education", value: data.education === "graduate" ? 0.12 : 0, raw: data.education },
-      { feature: "Existing Liabilities", value: -Math.min(liabilityRatio * 4, 0.6), raw: `$${data.existingLoans.toLocaleString()}` },
-      { feature: "Savings Buffer", value: Math.min(data.savings / Math.max(data.loanAmount, 1), 0.4), raw: `$${data.savings.toLocaleString()}` },
-      { feature: "Collateral (LTV)", value: data.collateralValue > 0 ? Math.max(0.3 - ltv * 0.3, -0.2) : 0, raw: data.collateralValue ? ltv.toFixed(2) : "—" },
-      { feature: "Dependents", value: -data.dependents * 0.04, raw: String(data.dependents) },
-      { feature: "Property Area", value: data.propertyArea === "urban" ? 0.05 : data.propertyArea === "semiurban" ? 0.02 : -0.03, raw: data.propertyArea },
-    ];
+  if (import.meta.env.DEV) {
+    if (envUrl) return envUrl.replace(/\/$/, "");
+    return "/api";
+  }
 
-    const base = 0.5;
-    const logit = contribs.reduce((s, c) => s + c.value, base);
-    const probability = 1 / (1 + Math.exp(-logit * 2.2));
-    const prediction = probability >= 0.55 ? "Approved" : "Rejected";
+  if (!envUrl) {
+    throw new Error(
+      "VITE_API_URL is not configured. Set it in your hosting provider environment variables.",
+    );
+  }
 
-    const feature_importance = contribs
-      .map((c) => ({ feature: c.feature, importance: Math.abs(c.value) }))
-      .sort((a, b) => b.importance - a.importance);
+  return envUrl.replace(/\/$/, "");
+}
 
-    const insights = contribs
-      .slice()
-      .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
-      .slice(0, 4)
-      .map((c) => {
-        if (c.value > 0.05)
-          return { type: "positive" as const, text: `${c.feature} (${c.raw}) positively influenced approval.` };
-        if (c.value < -0.05)
-          return { type: "negative" as const, text: `${c.feature} (${c.raw}) reduced eligibility.` };
-        return { type: "neutral" as const, text: `${c.feature} had a neutral effect.` };
-      });
+function normalizePrediction(value: unknown): "Approved" | "Rejected" {
+  if (value === "Approved" || value === 1 || value === "1") return "Approved";
+  return "Rejected";
+}
 
-    const suggestions: string[] = [];
-    if (data.creditScore < 700) suggestions.push("Improve credit score above 700 for stronger approval odds.");
-    if (dti > 0.05) suggestions.push("Consider a longer term or smaller loan amount to lower debt-to-income.");
-    if (data.savings < data.loanAmount * 0.1) suggestions.push("Build savings to at least 10% of the loan amount.");
-    if (data.existingLoans > totalIncome * 6) suggestions.push("Pay down existing liabilities before applying.");
-    if (data.collateralValue === 0 && data.loanAmount > 50000) suggestions.push("Add collateral to secure larger loans.");
+function normalizeShapRaw(raw: unknown): string | number {
+  if (typeof raw === "number" || typeof raw === "string") return raw;
+  return String(raw ?? "");
+}
 
-    return {
-      prediction,
-      confidence: Math.max(probability, 1 - probability),
-      approvalProbability: probability,
-      shap_values: contribs,
-      feature_importance,
-      insights,
-      suggestions,
-    };
+export async function predictLoan(data: PredictInput): Promise<PredictResult> {
+  const payload = PredictSchema.parse(data);
+  const url = `${getApiBaseUrl()}/predict`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
   });
+
+  if (!response.ok) {
+    const errBody = await response.text().catch(() => "");
+    throw new Error(errBody || `Prediction failed (${response.status})`);
+  }
+
+  const json = (await response.json()) as Record<string, unknown>;
+
+  const approvalProbability =
+    typeof json.approvalProbability === "number"
+      ? json.approvalProbability
+      : typeof json.confidence === "number"
+        ? json.confidence
+        : 0.5;
+
+  const confidence =
+    typeof json.confidence === "number"
+      ? json.confidence
+      : Math.max(approvalProbability, 1 - approvalProbability);
+
+  const shap_values = Array.isArray(json.shap_values)
+    ? (json.shap_values as ShapFeature[]).map((s) => ({
+        feature: String(s.feature),
+        value: Number(s.value),
+        raw: normalizeShapRaw(s.raw),
+      }))
+    : [];
+
+  const insights = Array.isArray(json.insights)
+    ? (json.insights as PredictResult["insights"])
+    : [];
+
+  const suggestions = Array.isArray(json.suggestions)
+    ? (json.suggestions as string[])
+    : [];
+
+  return {
+    prediction: normalizePrediction(json.prediction),
+    confidence,
+    approvalProbability,
+    shap_values,
+    feature_importance: Array.isArray(json.feature_importance)
+      ? (json.feature_importance as PredictResult["feature_importance"])
+      : undefined,
+    insights,
+    suggestions,
+  };
+}

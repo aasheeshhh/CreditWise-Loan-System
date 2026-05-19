@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { PredictionForm } from "@/components/predict/PredictionForm";
 import { PredictionResult } from "@/components/predict/PredictionResult";
@@ -10,48 +9,30 @@ import { predictLoan, type PredictInput, type PredictResult } from "@/lib/predic
 
 export const Route = createFileRoute("/predict")({
   component: PredictPage,
-  head: () => ({
-    meta: [
-      { title: "Predict — Credexa" },
-      { name: "description", content: "Get an instant, explainable loan approval prediction." },
-    ],
-  }),
 });
 
 function PredictPage() {
-  const predict = useServerFn(predictLoan);
   const [phase, setPhase] = useState<"form" | "processing" | "result">("form");
   const [result, setResult] = useState<PredictResult | null>(null);
 
-const onSubmit = async (data: PredictInput) => {
-  setPhase("processing");
+  const onSubmit = async (data: PredictInput) => {
+    setPhase("processing");
 
-  try {
-    const response = await fetch("http://127.0.0.1:5000/predict", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    const res = await response.json();
-
-    setResult(res);
-    setPhase("result");
-
-    toast.success(
-      res.prediction === 1
-        ? "Approved with high confidence"
-        : "Profile analyzed"
-    );
-
-  } catch (e) {
-    console.error(e);
-    toast.error("Something went wrong. Please try again.");
-    setPhase("form");
-  }
-};
+    try {
+      const res = await predictLoan(data);
+      setResult(res);
+      setPhase("result");
+      toast.success(
+        res.prediction === "Approved"
+          ? "Approved with high confidence"
+          : "Profile analyzed",
+      );
+    } catch (e) {
+      console.error(e);
+      toast.error("Something went wrong. Please try again.");
+      setPhase("form");
+    }
+  };
 
   return (
     <section className="relative">
@@ -74,7 +55,12 @@ const onSubmit = async (data: PredictInput) => {
         <div className="mt-10">
           <AnimatePresence mode="wait">
             {phase === "form" && (
-              <motion.div key="form" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+              <motion.div
+                key="form"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
                 <PredictionForm onSubmit={onSubmit} />
               </motion.div>
             )}
@@ -84,11 +70,19 @@ const onSubmit = async (data: PredictInput) => {
               </motion.div>
             )}
             {phase === "result" && result && (
-              <motion.div key="res" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <motion.div
+                key="res"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+              >
                 <PredictionResult result={result} />
                 <div className="mt-8 text-center">
                   <button
-                    onClick={() => { setPhase("form"); setResult(null); }}
+                    onClick={() => {
+                      setPhase("form");
+                      setResult(null);
+                    }}
                     className="inline-flex items-center rounded-full glass px-6 py-3 text-sm font-medium hover:bg-card transition"
                   >
                     Run another prediction
