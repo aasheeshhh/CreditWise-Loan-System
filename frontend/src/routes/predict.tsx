@@ -23,22 +23,35 @@ function PredictPage() {
   const [phase, setPhase] = useState<"form" | "processing" | "result">("form");
   const [result, setResult] = useState<PredictResult | null>(null);
 
-  const onSubmit = async (data: PredictInput) => {
-    setPhase("processing");
-    try {
-      const [res] = await Promise.all([
-        predict({ data }),
-        new Promise((r) => setTimeout(r, 1600)),
-      ]);
-      setResult(res);
-      setPhase("result");
-      toast.success(res.prediction === "Approved" ? "Approved with high confidence" : "Profile analyzed");
-    } catch (e) {
-      console.error(e);
-      toast.error("Something went wrong. Please try again.");
-      setPhase("form");
-    }
-  };
+const onSubmit = async (data: PredictInput) => {
+  setPhase("processing");
+
+  try {
+    const response = await fetch("http://127.0.0.1:5000/predict", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const res = await response.json();
+
+    setResult(res);
+    setPhase("result");
+
+    toast.success(
+      res.prediction === 1
+        ? "Approved with high confidence"
+        : "Profile analyzed"
+    );
+
+  } catch (e) {
+    console.error(e);
+    toast.error("Something went wrong. Please try again.");
+    setPhase("form");
+  }
+};
 
   return (
     <section className="relative">
