@@ -75,8 +75,8 @@ The model predicts loan approval probability based on:
 
 ## Live Demo
 
-Frontend: [Add Netlify URL Here]
-Backend API: [Add Render URL Here]
+Frontend: https://creditwiseloan.netlify.app/
+Backend API: (https://creditwise-loan-system-0a7w.onrender.com)
 
 ## Run Locally
 
