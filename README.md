@@ -67,7 +67,7 @@ The model predicts loan approval probability based on:
 ## Project Highlights
 
 * End-to-end ML system deployment
-* Frontend ↔ Backend API integration
+* Frontend to Backend API integration
 * Real-world production deployment
 * Custom feature engineering
 * Interactive prediction visualization
