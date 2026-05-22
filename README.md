@@ -3,7 +3,7 @@
 
 CreditWise is a full-stack machine learning web application that predicts loan approval eligibility using applicant financial and demographic information.
 
-The project combines a trained ML model, Flask backend API, and modern React frontend to deliver real-time loan approval predictions with an interactive user experience.
+The project combines a trained ML model, Flask backend API, & modern React frontend to deliver real-time loan approval predictions with an interactive user experience.
 
 ## Features
 
