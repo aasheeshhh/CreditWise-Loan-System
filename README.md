@@ -53,7 +53,7 @@ Built an end-to-end supervised ML pipeline using:
 * XGBoost
 * Stacking Ensemble Techniques
 
-The model predicts loan approval probability based on:
+The model predicts loan approval probability based on this features:
 
 * Income
 * Credit score
