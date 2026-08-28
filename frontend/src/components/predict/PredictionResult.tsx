@@ -47,13 +47,12 @@ export function PredictionResult({ result }: { result: PredictResult }) {
             <h2 className="mt-4 text-4xl sm:text-5xl font-semibold tracking-tight">
               {pct}% <span className="text-muted-foreground text-2xl font-normal">approval probability</span>
             </h2>
-            <p className="mt-3 text-sm text-muted-foreground max-w-md">
-              Model confidence{" "}
-              <span className="text-foreground font-medium">{Math.round(result.confidence * 100)}%</span>.
-              {approved
-                ? " Your profile meets the criteria across the strongest signals."
-                : " A few adjustments could materially improve your odds."}
-            </p>
+              <p className="mt-3 text-sm text-muted-foreground max-w-md">
+                Based on your financial profile and the trained ML model.
+                {approved
+                  ? " Your profile meets the criteria across the strongest signals."
+                  : " A few adjustments could materially improve your odds."}
+              </p>
           </div>
           <div className="h-44">
             <ResponsiveContainer width="100%" height="100%">
