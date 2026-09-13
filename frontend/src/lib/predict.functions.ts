@@ -1,10 +1,11 @@
 import { z } from "zod";
 
+/** Client schema aligned with backend validation ranges in app/validation.py */
 const PredictSchema = z.object({
-  income: z.number().min(0),
-  loanAmount: z.number().min(0),
-  creditScore: z.number().min(300).max(850),
-  loanTerm: z.number().min(1).max(480),
+  income: z.number().min(15_000).max(500_000),
+  loanAmount: z.number().min(50_000).max(15_000_000),
+  creditScore: z.number().min(320).max(850),
+  loanTerm: z.number().min(12).max(360),
   employmentStatus: z.string(),
   education: z.string(),
   coapplicantIncome: z.number().min(0).default(0),
@@ -34,6 +35,10 @@ export type PredictResult = {
   feature_importance?: { feature: string; importance: number }[];
   insights: { type: "positive" | "negative" | "neutral"; text: string }[];
   suggestions: string[];
+  calculated?: {
+    estimatedEmi: number;
+    emiToIncomeRatio: number;
+  };
 };
 
 /**
@@ -68,15 +73,61 @@ function normalizeShapRaw(raw: unknown): string | number {
   return String(raw ?? "");
 }
 
+function formatZodError(error: z.ZodError): string {
+  const first = error.issues[0];
+  if (!first) return "Please check your inputs and try again.";
+  const field = first.path.join(".") || "input";
+  return `${field}: ${first.message}`;
+}
+
+/** Map low-level fetch/Zod failures to human-readable messages. */
+export function toUserFacingError(error: unknown): string {
+  if (error instanceof z.ZodError) {
+    return formatZodError(error);
+  }
+
+  if (error instanceof TypeError) {
+    // Typical browser message when the API is unreachable / CORS blocked.
+    return "Unable to reach the prediction service. Please check your connection and try again.";
+  }
+
+  if (error instanceof Error && error.message) {
+    const msg = error.message;
+    if (/failed to fetch|networkerror|load failed/i.test(msg)) {
+      return "Unable to reach the prediction service. Please check your connection and try again.";
+    }
+    if (/VITE_API_URL/i.test(msg)) {
+      return "The prediction API is not configured. Please contact the site administrator.";
+    }
+    if (/Prediction failed \(5\d\d\)/i.test(msg)) {
+      return "The prediction service ran into an unexpected error. Please try again shortly.";
+    }
+    return msg;
+  }
+
+  return "Something went wrong. Please try again.";
+}
+
 export async function predictLoan(data: PredictInput): Promise<PredictResult> {
-  const payload = PredictSchema.parse(data);
+  let payload: PredictInput;
+  try {
+    payload = PredictSchema.parse(data);
+  } catch (error) {
+    throw new Error(toUserFacingError(error));
+  }
+
   const url = `${getApiBaseUrl()}/predict`;
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    throw new Error(toUserFacingError(error));
+  }
 
   if (!response.ok) {
     let message = `Prediction failed (${response.status})`;
@@ -86,10 +137,24 @@ export async function predictLoan(data: PredictInput): Promise<PredictResult> {
     } catch {
       // Non-JSON error body — keep status message.
     }
+    if (response.status >= 500) {
+      throw new Error(
+        "The prediction service ran into an unexpected error. Please try again shortly.",
+      );
+    }
     throw new Error(message);
   }
 
-  const json = (await response.json()) as Record<string, unknown>;
+  let json: Record<string, unknown>;
+  try {
+    json = (await response.json()) as Record<string, unknown>;
+  } catch {
+    throw new Error("Received an invalid response from the prediction service.");
+  }
+
+  if (json.prediction == null && json.approvalProbability == null) {
+    throw new Error("Received an incomplete response from the prediction service.");
+  }
 
   const approvalProbability =
     typeof json.approvalProbability === "number"
@@ -111,13 +176,14 @@ export async function predictLoan(data: PredictInput): Promise<PredictResult> {
       }))
     : [];
 
-  const insights = Array.isArray(json.insights)
-    ? (json.insights as PredictResult["insights"])
-    : [];
+  const insights = Array.isArray(json.insights) ? (json.insights as PredictResult["insights"]) : [];
 
-  const suggestions = Array.isArray(json.suggestions)
-    ? (json.suggestions as string[])
-    : [];
+  const suggestions = Array.isArray(json.suggestions) ? (json.suggestions as string[]) : [];
+
+  const calculated =
+    json.calculated && typeof json.calculated === "object"
+      ? (json.calculated as PredictResult["calculated"])
+      : undefined;
 
   return {
     prediction: normalizePrediction(json.prediction),
@@ -129,5 +195,6 @@ export async function predictLoan(data: PredictInput): Promise<PredictResult> {
       : undefined,
     insights,
     suggestions,
+    calculated,
   };
 }

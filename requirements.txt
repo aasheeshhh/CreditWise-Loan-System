@@ -6,3 +6,5 @@ xgboost
 joblib
 gunicorn
 flask-cors
+pytest
+pytest-cov

@@ -43,8 +43,7 @@
   --color-chart-5: var(--chart-5);
 
   --font-sans:
-    "SF Pro Display", -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
-    Roboto, sans-serif;
+    "SF Pro Display", -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
 }
 
 :root {
@@ -192,11 +191,22 @@
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-12px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
 }
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
-.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}

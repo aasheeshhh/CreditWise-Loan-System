@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { PredictInput } from "@/lib/predict.functions";
+import { parseNumericInput } from "@/lib/numeric-input";
 
 type Props = {
   onSubmit: (data: PredictInput) => void;
@@ -47,12 +48,6 @@ const initial: FormState = {
   loanPurpose: "personal",
   propertyArea: "urban",
 };
-
-function parseNumericInput(raw: string): number | "" {
-  if (raw === "") return "";
-  const n = Number(raw);
-  return Number.isFinite(n) ? n : "";
-}
 
 function toPredictInput(data: FormState): PredictInput {
   const num = (v: number | "", fallback = 0) => (v === "" ? fallback : v);
@@ -124,14 +119,15 @@ export function PredictionForm({ onSubmit, loading }: Props) {
         Tell us a bit about your finances
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        We'll instantly estimate your approval odds with explainable AI.
+        We'll instantly estimate your approval odds with clear, rule-based insights.
       </p>
 
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-5">
         <Field label="Monthly income" icon={DollarSign}>
           <input
             type="number"
-            min={0}
+            min={15000}
+            max={500000}
             value={data.income}
             onChange={(e) => setNumeric("income", e.target.value)}
             className={inputCls}
@@ -140,14 +136,18 @@ export function PredictionForm({ onSubmit, loading }: Props) {
         <Field label="Loan amount" icon={Wallet}>
           <input
             type="number"
-            min={0}
+            min={50000}
+            max={15000000}
             value={data.loanAmount}
             onChange={(e) => setNumeric("loanAmount", e.target.value)}
             className={inputCls}
           />
         </Field>
 
-        <Field label={`Credit score · ${data.creditScore === "" ? "—" : data.creditScore}`} icon={Gauge}>
+        <Field
+          label={`Credit score · ${data.creditScore === "" ? "—" : data.creditScore}`}
+          icon={Gauge}
+        >
           <input
             type="range"
             min={320}
@@ -157,11 +157,16 @@ export function PredictionForm({ onSubmit, loading }: Props) {
             className="w-full accent-[color:var(--color-primary)]"
           />
           <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
-            <span>320</span><span>575</span><span>850</span>
+            <span>320</span>
+            <span>575</span>
+            <span>850</span>
           </div>
         </Field>
 
-        <Field label={`Loan term · ${data.loanTerm === "" ? "—" : data.loanTerm} months`} icon={Calendar}>
+        <Field
+          label={`Loan term · ${data.loanTerm === "" ? "—" : data.loanTerm} months`}
+          icon={Calendar}
+        >
           <input
             type="range"
             min={12}

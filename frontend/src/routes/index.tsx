@@ -1,26 +1,30 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import {
-  ShieldCheck,
-  Zap,
-  Brain,
-  LineChart,
-  Gauge,
-  ArrowRight,
-} from "lucide-react";
+import { ShieldCheck, Zap, Brain, LineChart, Gauge, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "Credexa — AI Loan Approval Intelligence" },
-      { name: "description", content: "Instantly predict loan approval chances with explainable machine learning." },
+      { title: "CreditWise — AI Loan Approval Intelligence" },
+      {
+        name: "description",
+        content: "Instantly predict loan approval chances with explainable machine learning.",
+      },
     ],
   }),
 });
 
-function Counter({ to, suffix = "", decimals = 0 }: { to: number; suffix?: string; decimals?: number }) {
+function Counter({
+  to,
+  suffix = "",
+  decimals = 0,
+}: {
+  to: number;
+  suffix?: string;
+  decimals?: number;
+}) {
   const [val, setVal] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
@@ -42,12 +46,23 @@ function Counter({ to, suffix = "", decimals = 0 }: { to: number; suffix?: strin
     io.observe(el);
     return () => io.disconnect();
   }, [to]);
-  return <span ref={ref}>{val.toFixed(decimals)}{suffix}</span>;
+  return (
+    <span ref={ref}>
+      {val.toFixed(decimals)}
+      {suffix}
+    </span>
+  );
 }
 
 function FloatingCard({
-  delay = 0, className = "", children,
-}: { delay?: number; className?: string; children: React.ReactNode }) {
+  delay = 0,
+  className = "",
+  children,
+}: {
+  delay?: number;
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -87,14 +102,16 @@ function Landing() {
             className="text-center max-w-3xl mx-auto"
           >
             <div className="inline-flex items-center gap-2 rounded-full glass px-3 py-1 text-xs font-medium text-primary">
-              <Brain className="h-3.5 w-3.5" /> Explainable AI · SHAP-powered
+              <Brain className="h-3.5 w-3.5" /> Explainable AI · Rule-based insights
             </div>
             <h1 className="mt-6 text-5xl sm:text-7xl font-semibold tracking-tight leading-[1.05]">
-              <span className="text-gradient">AI-Powered</span><br />Loan Intelligence
+              <span className="text-gradient">AI-Powered</span>
+              <br />
+              Loan Intelligence
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Instantly predict loan approval chances with explainable machine learning —
-              built for clarity, designed for confidence.
+              Instantly predict loan approval chances with explainable machine learning — built for
+              clarity, designed for confidence.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
               <Link
@@ -118,24 +135,40 @@ function Landing() {
           <div className="relative mt-16 sm:mt-24 mx-auto max-w-5xl">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
               <FloatingCard delay={0}>
-                <div className="text-xs text-muted-foreground">AI Accuracy</div>
-                <div className="mt-1 text-2xl font-semibold tracking-tight"><Counter to={97.4} decimals={1} suffix="%" /></div>
-                <div className="mt-2 inline-flex items-center gap-1 text-xs text-[color:var(--color-success)]"><ShieldCheck className="h-3 w-3" /> Validated</div>
+                <div className="text-xs text-muted-foreground">Hold-out Accuracy</div>
+                <div className="mt-1 text-2xl font-semibold tracking-tight">
+                  <Counter to={95.8} decimals={1} suffix="%" />
+                </div>
+                <div className="mt-2 inline-flex items-center gap-1 text-xs text-[color:var(--color-success)]">
+                  <ShieldCheck className="h-3 w-3" /> Eval set
+                </div>
               </FloatingCard>
               <FloatingCard delay={0.15}>
-                <div className="text-xs text-muted-foreground">Approval Confidence</div>
-                <div className="mt-1 text-2xl font-semibold tracking-tight"><Counter to={92} suffix="%" /></div>
-                <div className="mt-2 inline-flex items-center gap-1 text-xs text-primary"><Gauge className="h-3 w-3" /> High</div>
+                <div className="text-xs text-muted-foreground">ROC-AUC (XGBoost)</div>
+                <div className="mt-1 text-2xl font-semibold tracking-tight">
+                  <Counter to={99.0} decimals={1} suffix="%" />
+                </div>
+                <div className="mt-2 inline-flex items-center gap-1 text-xs text-primary">
+                  <Gauge className="h-3 w-3" /> Notebook
+                </div>
               </FloatingCard>
               <FloatingCard delay={0.3}>
-                <div className="text-xs text-muted-foreground">Credit Insights</div>
-                <div className="mt-1 text-2xl font-semibold tracking-tight"><Counter to={10} /></div>
-                <div className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground"><LineChart className="h-3 w-3" /> Signals</div>
+                <div className="text-xs text-muted-foreground">Model Features</div>
+                <div className="mt-1 text-2xl font-semibold tracking-tight">
+                  <Counter to={16} />
+                </div>
+                <div className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <LineChart className="h-3 w-3" /> Inputs
+                </div>
               </FloatingCard>
               <FloatingCard delay={0.45}>
                 <div className="text-xs text-muted-foreground">Prediction Time</div>
-                <div className="mt-1 text-2xl font-semibold tracking-tight"><Counter to={0.4} decimals={1} suffix="s" /></div>
-                <div className="mt-2 inline-flex items-center gap-1 text-xs text-primary"><Zap className="h-3 w-3" /> Realtime</div>
+                <div className="mt-1 text-2xl font-semibold tracking-tight">
+                  <Counter to={0.4} decimals={1} suffix="s" />
+                </div>
+                <div className="mt-2 inline-flex items-center gap-1 text-xs text-primary">
+                  <Zap className="h-3 w-3" /> Realtime
+                </div>
               </FloatingCard>
             </div>
           </div>
@@ -145,14 +178,31 @@ function Landing() {
       {/* FEATURES */}
       <section id="features" className="mx-auto max-w-6xl px-6 py-24">
         <div className="max-w-2xl">
-          <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight">Designed for clarity.</h2>
-          <p className="mt-4 text-muted-foreground text-lg">Every prediction comes with the reasoning behind it — no black boxes, just elegant insight.</p>
+          <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight">
+            Designed for clarity.
+          </h2>
+          <p className="mt-4 text-muted-foreground text-lg">
+            Every prediction comes with the reasoning behind it — no black boxes, just elegant
+            insight.
+          </p>
         </div>
         <div className="mt-12 grid md:grid-cols-3 gap-6">
           {[
-            { icon: Brain, t: "Explainable ML", d: "SHAP-based contributions show exactly why a decision was made." },
-            { icon: Zap, t: "Sub-second", d: "Predictions stream in under half a second, every time." },
-            { icon: ShieldCheck, t: "Private by design", d: "Inputs are processed transiently — never stored." },
+            {
+              icon: Brain,
+              t: "Explainable ML",
+              d: "Rule-based prediction insights highlight the key drivers behind each result.",
+            },
+            {
+              icon: Zap,
+              t: "Sub-second",
+              d: "Predictions stream in under half a second, every time.",
+            },
+            {
+              icon: ShieldCheck,
+              t: "Private by design",
+              d: "Inputs are processed transiently — never stored.",
+            },
           ].map(({ icon: Icon, t, d }, i) => (
             <motion.div
               key={t}
@@ -176,9 +226,12 @@ function Landing() {
       <section id="insights" className="mx-auto max-w-6xl px-6 py-24">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight">Insights that speak human.</h2>
+            <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight">
+              Insights that speak human.
+            </h2>
             <p className="mt-4 text-muted-foreground text-lg">
-              Credexa translates dense model output into clear, considered narratives — so you understand the why, not just the what.
+              CreditWise translates dense model output into clear, considered narratives — so you
+              understand the why, not just the what.
             </p>
           </div>
           <div className="space-y-3">
@@ -207,10 +260,10 @@ function Landing() {
       <section className="mx-auto max-w-6xl px-6 py-16">
         <div className="glass rounded-3xl p-10 grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
-            { v: 1240000, s: "+", l: "Predictions" },
-            { v: 97.4, s: "%", d: 1, l: "AI accuracy" },
-            { v: 0.4, s: "s", d: 1, l: "Avg response" },
-            { v: 4.9, s: "/5", d: 1, l: "Satisfaction" },
+            { v: 16, s: "", l: "Model features" },
+            { v: 95.8, s: "%", d: 1, l: "Hold-out accuracy" },
+            { v: 0.4, s: "s", d: 1, l: "Typical response" },
+            { v: 4, s: "", l: "Models compared" },
           ].map((m) => (
             <div key={m.l}>
               <div className="text-3xl sm:text-4xl font-semibold tracking-tight">
@@ -222,14 +275,17 @@ function Landing() {
         </div>
       </section>
 
-
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-6 pb-24">
         <div className="glass rounded-3xl p-12 text-center relative overflow-hidden">
           <div className="absolute inset-0 hero-bg opacity-60" />
           <div className="relative">
-            <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight">Ready in 30 seconds.</h2>
-            <p className="mt-3 text-muted-foreground">Predict your loan approval with explainable AI.</p>
+            <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight">
+              Ready in 30 seconds.
+            </h2>
+            <p className="mt-3 text-muted-foreground">
+              Predict your loan approval with explainable AI.
+            </p>
             <Link
               to="/predict"
               className="mt-7 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-elegant"

@@ -4,8 +4,8 @@ export const Route = createFileRoute("/privacy")({
   component: PrivacyPage,
   head: () => ({
     meta: [
-      { title: "Privacy Policy — Credexa" },
-      { name: "description", content: "How Credexa handles your data and protects your privacy." },
+      { title: "Privacy Policy — CreditWise" },
+      { name: "description", content: "How CreditWise handles your data and protects your privacy." },
     ],
   }),
 });
@@ -20,33 +20,39 @@ function PrivacyPage() {
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-foreground">1. Overview</h2>
           <p className="mt-2">
-            Credexa is an AI-powered loan approval prediction platform. We respect your privacy and
+            CreditWise is an AI-powered loan approval prediction platform. We respect your privacy and
             are committed to protecting the information you share with us. This policy explains what
             we collect, how we use it, and the choices you have.
           </p>
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold tracking-tight text-foreground">2. Information we process</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            2. Information we process
+          </h2>
           <p className="mt-2">
-            To generate a prediction, we process the financial and personal inputs you provide
-            (e.g. income, credit score, employment status, loan amount). These values are processed
+            To generate a prediction, we process the financial and personal inputs you provide (e.g.
+            income, credit score, employment status, loan amount). These values are processed
             transiently in memory and are not persisted to a database.
           </p>
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold tracking-tight text-foreground">3. How we use information</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            3. How we use information
+          </h2>
           <p className="mt-2">
-            Inputs are used solely to compute a loan approval probability and the corresponding
-            explainability output (SHAP feature contributions). We do not sell or share your data.
+            Inputs are used solely to compute a loan approval probability and corresponding
+            rule-based prediction insights. We do not sell or share your data.
           </p>
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold tracking-tight text-foreground">4. Cookies & analytics</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            4. Cookies & analytics
+          </h2>
           <p className="mt-2">
-            Credexa uses minimal cookies required for theme preference and session continuity. No
+            CreditWise uses minimal cookies required for theme preference and session continuity. No
             third-party advertising trackers are deployed.
           </p>
         </div>
@@ -58,7 +64,8 @@ function PrivacyPage() {
             privacy concerns, reach out at{" "}
             <a className="text-primary hover:underline" href="mailto:ashishligade.tech@gmail.com">
               ashishligade.tech@gmail.com
-            </a>.
+            </a>
+            .
           </p>
         </div>
 
@@ -68,7 +75,8 @@ function PrivacyPage() {
             Questions about this policy? Email{" "}
             <a className="text-primary hover:underline" href="mailto:ashishligade.tech@gmail.com">
               ashishligade.tech@gmail.com
-            </a>.
+            </a>
+            .
           </p>
         </div>
       </div>

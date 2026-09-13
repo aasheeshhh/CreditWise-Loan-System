@@ -4,8 +4,8 @@ export const Route = createFileRoute("/terms")({
   component: TermsPage,
   head: () => ({
     meta: [
-      { title: "Terms of Service — Credexa" },
-      { name: "description", content: "The terms that govern your use of Credexa." },
+      { title: "Terms of Service — CreditWise" },
+      { name: "description", content: "The terms that govern your use of CreditWise." },
     ],
   }),
 });
@@ -20,22 +20,26 @@ function TermsPage() {
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-foreground">1. Acceptance</h2>
           <p className="mt-2">
-            By accessing Credexa you agree to these terms. If you do not agree, please do not use
+            By accessing CreditWise you agree to these terms. If you do not agree, please do not use
             the service.
           </p>
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold tracking-tight text-foreground">2. Nature of predictions</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            2. Nature of predictions
+          </h2>
           <p className="mt-2">
-            Credexa provides AI-generated estimations of loan approval likelihood for informational
+            CreditWise provides AI-generated estimations of loan approval likelihood for informational
             purposes only. Predictions are not financial advice and do not constitute a lending
             offer or guarantee from any institution.
           </p>
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold tracking-tight text-foreground">3. Acceptable use</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            3. Acceptable use
+          </h2>
           <p className="mt-2">
             You agree not to misuse the platform, attempt to reverse-engineer the model, or submit
             data on behalf of third parties without their consent.
@@ -43,9 +47,11 @@ function TermsPage() {
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold tracking-tight text-foreground">4. Intellectual property</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            4. Intellectual property
+          </h2>
           <p className="mt-2">
-            All branding, code, and model artifacts remain the property of Credexa and its
+            All branding, code, and model artifacts remain the property of CreditWise and its
             contributors.
           </p>
         </div>
@@ -53,7 +59,7 @@ function TermsPage() {
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-foreground">5. Liability</h2>
           <p className="mt-2">
-            Credexa is provided “as is” without warranties of any kind. We are not liable for any
+            CreditWise is provided “as is” without warranties of any kind. We are not liable for any
             financial decision made based on a prediction.
           </p>
         </div>
@@ -64,7 +70,8 @@ function TermsPage() {
             For questions regarding these terms, contact{" "}
             <a className="text-primary hover:underline" href="mailto:ashishligade.tech@gmail.com">
               ashishligade.tech@gmail.com
-            </a>.
+            </a>
+            .
           </p>
         </div>
       </div>

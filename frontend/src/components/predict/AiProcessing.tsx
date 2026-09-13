@@ -29,7 +29,6 @@ export function AiProcessing() {
           </motion.div>
         </div>
         <motion.h3
-          key={Math.random()}
           initial={{ y: 10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="mt-8 text-xl sm:text-2xl font-semibold tracking-tight"
@@ -37,7 +36,7 @@ export function AiProcessing() {
           Analyzing financial profile…
         </motion.h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Running explainable ML across 10 weighted signals
+          Running the trained stacking model across 16 features
         </p>
         <div className="mx-auto mt-6 h-1 w-64 overflow-hidden rounded-full bg-muted">
           <motion.div

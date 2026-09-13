@@ -5,7 +5,12 @@ import { toast } from "sonner";
 import { PredictionForm } from "@/components/predict/PredictionForm";
 import { PredictionResult } from "@/components/predict/PredictionResult";
 import { AiProcessing } from "@/components/predict/AiProcessing";
-import { predictLoan, type PredictInput, type PredictResult } from "@/lib/predict.functions";
+import {
+  predictLoan,
+  toUserFacingError,
+  type PredictInput,
+  type PredictResult,
+} from "@/lib/predict.functions";
 
 export const Route = createFileRoute("/predict")({
   component: PredictPage,
@@ -23,17 +28,10 @@ function PredictPage() {
       setResult(res);
       setPhase("result");
       toast.success(
-        res.prediction === "Approved"
-          ? "Approved with high confidence"
-          : "Profile analyzed",
+        res.prediction === "Approved" ? "Approved with high confidence" : "Profile analyzed",
       );
     } catch (e) {
-      console.error(e);
-      const message =
-        e instanceof Error && e.message
-          ? e.message
-          : "Something went wrong. Please try again.";
-      toast.error(message);
+      toast.error(toUserFacingError(e));
       setPhase("form");
     }
   };
@@ -69,7 +67,12 @@ function PredictPage() {
               </motion.div>
             )}
             {phase === "processing" && (
-              <motion.div key="proc" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <motion.div
+                key="proc"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
                 <AiProcessing />
               </motion.div>
             )}

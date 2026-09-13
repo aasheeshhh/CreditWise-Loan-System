@@ -18,13 +18,18 @@ export function Nav() {
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Sparkles className="h-4 w-4" />
             </span>
-            Credexa
+            CreditWise
           </Link>
           <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
-            <Link to="/" hash="features" className="hover:text-foreground transition-colors">Features</Link>
-            <Link to="/predict" className="hover:text-foreground transition-colors">Predict</Link>
-            <Link to="/" hash="insights" className="hover:text-foreground transition-colors">Insights</Link>
-            
+            <Link to="/" hash="features" className="hover:text-foreground transition-colors">
+              Features
+            </Link>
+            <Link to="/predict" className="hover:text-foreground transition-colors">
+              Predict
+            </Link>
+            <Link to="/" hash="insights" className="hover:text-foreground transition-colors">
+              Insights
+            </Link>
           </nav>
           <div className="flex items-center gap-2">
             <button
