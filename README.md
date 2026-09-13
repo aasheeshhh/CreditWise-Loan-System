@@ -4,7 +4,7 @@ Full-stack machine learning application that estimates loan approval eligibility
 
 The product UI and repository are branded **CreditWise**.
 
-**Live Demo:** https://credit-wise-loan-system.vercel.app/  
+**Live Demo:** https://creditwiseloan.netlify.app/
 **GitHub:** https://github.com/aasheeshhh/CreditWise-Loan-System
 
 ---
