@@ -305,11 +305,8 @@ See `frontend/.env.example`.
 
 Set `VITE_API_URL` to the Render API URL at build time, and set `CORS_ORIGINS` on Render to the Vercel frontend origin.
 
-## 16. Screenshots
 
-Add screenshots of the CreditWise landing page and prediction result UI under `docs/screenshots/` if desired for the portfolio README gallery.
-
-## 17. Limitations
+## 16. Limitations
 
 - The model is trained on historical / synthetic-style tabular data and may not generalize to every real applicant.
 - Predictions are **estimates**, not guarantees of lender approval.
@@ -320,7 +317,7 @@ Add screenshots of the CreditWise landing page and prediction result UI under `d
 - This system is a **decision-support demonstration**, not a real financial approval authority.
 - Notebook metrics and the deployed `creditwise-realistic-v1` artifact may reflect different dataset scales; treat notebook tables as evaluation history, not a live scorecard for every production prediction.
 
-## 18. Future improvements
+## 17. Future improvements
 
 - Wire optional SHAP values into `/predict` only if latency and dependency cost are acceptable
 - Persist evaluation metrics for the exact deployed model version in `metadata.pkl`
