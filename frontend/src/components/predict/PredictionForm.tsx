@@ -20,15 +20,25 @@ type Props = {
   loading?: boolean;
 };
 
-const initial: PredictInput = {
-  income: 6500,
-  loanAmount: 25000,
+/** Numeric fields may be "" while the user clears/edits the input. */
+type NumericKey = {
+  [K in keyof PredictInput]-?: PredictInput[K] extends number ? K : never;
+}[keyof PredictInput];
+
+type FormState = {
+  [K in keyof PredictInput]: K extends NumericKey ? number | "" : PredictInput[K];
+};
+
+const initial: FormState = {
+  // Defaults must sit inside the backend/model training ranges.
+  income: 65000,
+  loanAmount: 250000,
   creditScore: 720,
   loanTerm: 60,
   employmentStatus: "employed",
   education: "graduate",
   coapplicantIncome: 0,
-  savings: 5000,
+  savings: 50000,
   collateralValue: 0,
   existingLoans: 0,
   dependents: 0,
@@ -37,6 +47,33 @@ const initial: PredictInput = {
   loanPurpose: "personal",
   propertyArea: "urban",
 };
+
+function parseNumericInput(raw: string): number | "" {
+  if (raw === "") return "";
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : "";
+}
+
+function toPredictInput(data: FormState): PredictInput {
+  const num = (v: number | "", fallback = 0) => (v === "" ? fallback : v);
+  return {
+    income: num(data.income),
+    loanAmount: num(data.loanAmount),
+    creditScore: num(data.creditScore, 320),
+    loanTerm: num(data.loanTerm, 12),
+    employmentStatus: data.employmentStatus,
+    education: data.education,
+    coapplicantIncome: num(data.coapplicantIncome),
+    savings: num(data.savings),
+    collateralValue: num(data.collateralValue),
+    existingLoans: num(data.existingLoans),
+    dependents: num(data.dependents),
+    age: num(data.age, 18),
+    employerCategory: data.employerCategory,
+    loanPurpose: data.loanPurpose,
+    propertyArea: data.propertyArea,
+  };
+}
 
 function Field({
   label,
@@ -62,17 +99,21 @@ const inputCls =
   "w-full rounded-xl border border-border bg-card/60 px-4 py-3 text-sm outline-none transition-all duration-200 focus:border-primary/60 focus:bg-card focus:ring-4 focus:ring-primary/15 hover:bg-card";
 
 export function PredictionForm({ onSubmit, loading }: Props) {
-  const [data, setData] = useState<PredictInput>(initial);
+  const [data, setData] = useState<FormState>(initial);
   const [advanced, setAdvanced] = useState(false);
 
-  const set = <K extends keyof PredictInput>(k: K, v: PredictInput[K]) =>
+  const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setData((d) => ({ ...d, [k]: v }));
+
+  const setNumeric = (k: NumericKey, raw: string) => {
+    set(k, parseNumericInput(raw) as FormState[typeof k]);
+  };
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit(data);
+        onSubmit(toPredictInput(data));
       }}
       className="glass relative rounded-3xl p-6 sm:p-8 shadow-elegant"
     >
@@ -92,7 +133,7 @@ export function PredictionForm({ onSubmit, loading }: Props) {
             type="number"
             min={0}
             value={data.income}
-            onChange={(e) => set("income", +e.target.value)}
+            onChange={(e) => setNumeric("income", e.target.value)}
             className={inputCls}
           />
         </Field>
@@ -101,33 +142,33 @@ export function PredictionForm({ onSubmit, loading }: Props) {
             type="number"
             min={0}
             value={data.loanAmount}
-            onChange={(e) => set("loanAmount", +e.target.value)}
+            onChange={(e) => setNumeric("loanAmount", e.target.value)}
             className={inputCls}
           />
         </Field>
 
-        <Field label={`Credit score · ${data.creditScore}`} icon={Gauge}>
+        <Field label={`Credit score · ${data.creditScore === "" ? "—" : data.creditScore}`} icon={Gauge}>
           <input
             type="range"
-            min={300}
+            min={320}
             max={850}
-            value={data.creditScore}
-            onChange={(e) => set("creditScore", +e.target.value)}
+            value={data.creditScore === "" ? 320 : data.creditScore}
+            onChange={(e) => setNumeric("creditScore", e.target.value)}
             className="w-full accent-[color:var(--color-primary)]"
           />
           <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
-            <span>300</span><span>575</span><span>850</span>
+            <span>320</span><span>575</span><span>850</span>
           </div>
         </Field>
 
-        <Field label={`Loan term · ${data.loanTerm} months`} icon={Calendar}>
+        <Field label={`Loan term · ${data.loanTerm === "" ? "—" : data.loanTerm} months`} icon={Calendar}>
           <input
             type="range"
-            min={6}
+            min={12}
             max={360}
             step={6}
-            value={data.loanTerm}
-            onChange={(e) => set("loanTerm", +e.target.value)}
+            value={data.loanTerm === "" ? 12 : data.loanTerm}
+            onChange={(e) => setNumeric("loanTerm", e.target.value)}
             className="w-full accent-[color:var(--color-primary)]"
           />
         </Field>
@@ -138,8 +179,9 @@ export function PredictionForm({ onSubmit, loading }: Props) {
             onChange={(e) => set("employmentStatus", e.target.value)}
             className={inputCls}
           >
-            <option value="employed">Employed</option>
+            <option value="employed">Employed / Salaried</option>
             <option value="self-employed">Self-employed</option>
+            <option value="contract">Contract</option>
             <option value="unemployed">Unemployed</option>
             <option value="student">Student</option>
           </select>
@@ -152,7 +194,7 @@ export function PredictionForm({ onSubmit, loading }: Props) {
             className={inputCls}
           >
             <option value="graduate">Graduate</option>
-            <option value="undergraduate">Undergraduate</option>
+            <option value="undergraduate">Not graduate / Undergraduate</option>
             <option value="highschool">High school</option>
           </select>
         </Field>
@@ -183,51 +225,93 @@ export function PredictionForm({ onSubmit, loading }: Props) {
           >
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
               <Field label="Co-applicant income" icon={DollarSign}>
-                <input type="number" min={0} value={data.coapplicantIncome}
-                  onChange={(e) => set("coapplicantIncome", +e.target.value)} className={inputCls} />
+                <input
+                  type="number"
+                  min={0}
+                  value={data.coapplicantIncome}
+                  onChange={(e) => setNumeric("coapplicantIncome", e.target.value)}
+                  className={inputCls}
+                />
               </Field>
               <Field label="Savings" icon={Wallet}>
-                <input type="number" min={0} value={data.savings}
-                  onChange={(e) => set("savings", +e.target.value)} className={inputCls} />
+                <input
+                  type="number"
+                  min={0}
+                  value={data.savings}
+                  onChange={(e) => setNumeric("savings", e.target.value)}
+                  className={inputCls}
+                />
               </Field>
               <Field label="Collateral value" icon={Home}>
-                <input type="number" min={0} value={data.collateralValue}
-                  onChange={(e) => set("collateralValue", +e.target.value)} className={inputCls} />
+                <input
+                  type="number"
+                  min={0}
+                  value={data.collateralValue}
+                  onChange={(e) => setNumeric("collateralValue", e.target.value)}
+                  className={inputCls}
+                />
               </Field>
               <Field label="Existing loans" icon={Wallet}>
-                <input type="number" min={0} value={data.existingLoans}
-                  onChange={(e) => set("existingLoans", +e.target.value)} className={inputCls} />
+                <input
+                  type="number"
+                  min={0}
+                  value={data.existingLoans}
+                  onChange={(e) => setNumeric("existingLoans", e.target.value)}
+                  className={inputCls}
+                />
               </Field>
               <Field label="Dependents" icon={Users}>
-                <input type="number" min={0} max={10} value={data.dependents}
-                  onChange={(e) => set("dependents", +e.target.value)} className={inputCls} />
+                <input
+                  type="number"
+                  min={0}
+                  max={10}
+                  value={data.dependents}
+                  onChange={(e) => setNumeric("dependents", e.target.value)}
+                  className={inputCls}
+                />
               </Field>
               <Field label="Age" icon={Users}>
-                <input type="number" min={18} max={100} value={data.age}
-                  onChange={(e) => set("age", +e.target.value)} className={inputCls} />
+                <input
+                  type="number"
+                  min={18}
+                  max={100}
+                  value={data.age}
+                  onChange={(e) => setNumeric("age", e.target.value)}
+                  className={inputCls}
+                />
               </Field>
               <Field label="Employer category" icon={Building2}>
-                <select value={data.employerCategory}
-                  onChange={(e) => set("employerCategory", e.target.value)} className={inputCls}>
+                <select
+                  value={data.employerCategory}
+                  onChange={(e) => set("employerCategory", e.target.value)}
+                  className={inputCls}
+                >
                   <option value="private">Private</option>
                   <option value="public">Public sector</option>
-                  <option value="startup">Startup</option>
-                  <option value="freelance">Freelance</option>
+                  <option value="government">Government</option>
+                  <option value="startup">Startup / Other</option>
+                  <option value="freelance">Freelance / Other</option>
                 </select>
               </Field>
               <Field label="Loan purpose" icon={Sparkles}>
-                <select value={data.loanPurpose}
-                  onChange={(e) => set("loanPurpose", e.target.value)} className={inputCls}>
+                <select
+                  value={data.loanPurpose}
+                  onChange={(e) => set("loanPurpose", e.target.value)}
+                  className={inputCls}
+                >
                   <option value="personal">Personal</option>
                   <option value="home">Home</option>
-                  <option value="auto">Auto</option>
+                  <option value="auto">Auto / Car</option>
                   <option value="education">Education</option>
                   <option value="business">Business</option>
                 </select>
               </Field>
               <Field label="Property area" icon={Home}>
-                <select value={data.propertyArea}
-                  onChange={(e) => set("propertyArea", e.target.value)} className={inputCls}>
+                <select
+                  value={data.propertyArea}
+                  onChange={(e) => set("propertyArea", e.target.value)}
+                  className={inputCls}
+                >
                   <option value="urban">Urban</option>
                   <option value="semiurban">Semi-urban</option>
                   <option value="rural">Rural</option>

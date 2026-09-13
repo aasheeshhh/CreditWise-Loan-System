@@ -29,7 +29,11 @@ function PredictPage() {
       );
     } catch (e) {
       console.error(e);
-      toast.error("Something went wrong. Please try again.");
+      const message =
+        e instanceof Error && e.message
+          ? e.message
+          : "Something went wrong. Please try again.";
+      toast.error(message);
       setPhase("form");
     }
   };

@@ -128,7 +128,8 @@ export function PredictionResult({ result }: { result: PredictResult }) {
         </motion.div>
       </div>
 
-      {/* SHAP Waterfall / Feature contributions */}
+      {/* SHAP Waterfall / Feature contributions — only when backend provides values */}
+      {result.shap_values.length > 0 && (
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -171,6 +172,7 @@ export function PredictionResult({ result }: { result: PredictResult }) {
           </ResponsiveContainer>
         </div>
       </motion.div>
+      )}
     </div>
   );
 }

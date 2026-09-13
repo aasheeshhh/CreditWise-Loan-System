@@ -79,8 +79,14 @@ export async function predictLoan(data: PredictInput): Promise<PredictResult> {
   });
 
   if (!response.ok) {
-    const errBody = await response.text().catch(() => "");
-    throw new Error(errBody || `Prediction failed (${response.status})`);
+    let message = `Prediction failed (${response.status})`;
+    try {
+      const errJson = (await response.json()) as { error?: unknown };
+      if (errJson?.error != null) message = String(errJson.error);
+    } catch {
+      // Non-JSON error body — keep status message.
+    }
+    throw new Error(message);
   }
 
   const json = (await response.json()) as Record<string, unknown>;

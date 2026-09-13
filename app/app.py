@@ -18,6 +18,68 @@ model = joblib.load(MODEL_PATH)
 metadata = joblib.load(METADATA_PATH)
 MONTHLY_RATE = float(metadata['monthly_interest_rate'])
 
+# Map UI / API values onto the exact categorical labels used when the model was trained.
+_EMPLOYMENT = {
+    'employed': 'Salaried',
+    'salaried': 'Salaried',
+    'self-employed': 'Self-employed',
+    'self employed': 'Self-employed',
+    'unemployed': 'Unemployed',
+    'contract': 'Contract',
+    'student': 'Unemployed',
+}
+_EDUCATION = {
+    'graduate': 'Graduate',
+    'not graduate': 'Not Graduate',
+    'not_graduate': 'Not Graduate',
+    'undergraduate': 'Not Graduate',
+    'highschool': 'Not Graduate',
+    'high school': 'Not Graduate',
+}
+_LOAN_PURPOSE = {
+    'personal': 'Personal',
+    'home': 'Home',
+    'auto': 'Car',
+    'car': 'Car',
+    'education': 'Education',
+    'business': 'Business',
+}
+_EMPLOYER = {
+    'private': 'Private',
+    'public': 'Public',
+    'public sector': 'Public',
+    'government': 'Government',
+    'startup': 'Other',
+    'freelance': 'Other',
+    'other': 'Other',
+}
+_PROPERTY = {
+    'urban': 'Urban',
+    'semiurban': 'Semiurban',
+    'semi-urban': 'Semiurban',
+    'semi urban': 'Semiurban',
+    'rural': 'Rural',
+}
+
+
+def _normalize_category(value, mapping: dict, fallback: str) -> str:
+    raw = str(value or '').strip()
+    if not raw:
+        return fallback
+    key = raw.lower().replace('_', ' ').replace('-', ' ')
+    key = ' '.join(key.split())
+    # Also try hyphenated form used by the frontend (e.g. self-employed).
+    key_hyphen = key.replace(' ', '-')
+    if key in mapping:
+        return mapping[key]
+    if key_hyphen in mapping:
+        return mapping[key_hyphen]
+    # Already a trained label (case-insensitive).
+    for trained in mapping.values():
+        if raw.lower() == trained.lower():
+            return trained
+    return fallback
+
 
 def calculate_emi(principal: float, months: int, annual_rate: float = 0.10) -> float:
     """Calculate monthly EMI using a fixed 10% annual rate for the training/inference feature."""
@@ -52,11 +114,21 @@ def build_model_input(data: dict) -> pd.DataFrame:
         'Collateral_Value': float(data.get('collateralValue', 0) or 0),
         'Loan_Amount': loan_amount,
         'Loan_Term': loan_term,
-        'Employment_Status': str(data.get('employmentStatus', '')).title(),
-        'Loan_Purpose': str(data.get('loanPurpose', '')).title(),
-        'Property_Area': str(data.get('propertyArea', '')).title(),
-        'Education_Level': str(data.get('education', '')).title(),
-        'Employer_Category': str(data.get('employerCategory', '')).title(),
+        'Employment_Status': _normalize_category(
+            data.get('employmentStatus'), _EMPLOYMENT, 'Salaried'
+        ),
+        'Loan_Purpose': _normalize_category(
+            data.get('loanPurpose'), _LOAN_PURPOSE, 'Personal'
+        ),
+        'Property_Area': _normalize_category(
+            data.get('propertyArea'), _PROPERTY, 'Urban'
+        ),
+        'Education_Level': _normalize_category(
+            data.get('education'), _EDUCATION, 'Graduate'
+        ),
+        'Employer_Category': _normalize_category(
+            data.get('employerCategory'), _EMPLOYER, 'Private'
+        ),
         'DTI_Ratio_sq': dti ** 2,
         'Credit_Score_sq': credit_score ** 2,
     }

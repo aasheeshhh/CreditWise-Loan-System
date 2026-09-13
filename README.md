@@ -83,9 +83,8 @@ Backend API: (https://creditwise-loan-system-0a7w.onrender.com)
 ### Backend
 
 ```bash
-cd app
 pip install -r requirements.txt
-python app.py
+python app/app.py
 ```
 
 ### Frontend
@@ -95,4 +94,6 @@ cd frontend
 npm install
 npm run dev
 ```
+
+Set `VITE_API_URL` in Netlify to your Render backend URL (see `frontend/.env.example`). For local dev, leave it unset to use the Vite `/api` proxy, or set it to `http://127.0.0.1:5000`.
 
